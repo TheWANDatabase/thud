@@ -26,13 +26,13 @@ impl AuthType {
         }
     }
 
-    pub fn as_str(&self) -> &str {
-        match self {
-            AuthType::Whenplane => "whenplane",
-            AuthType::Federation => "federation",
-            AuthType::Custom => "custom",
-            AuthType::Unknown => "unknown",
-        }
-    }
+    // pub fn as_str(&self) -> &str {
+    //     match self {
+    //         AuthType::Whenplane => "whenplane",
+    //         AuthType::Federation => "federation",
+    //         AuthType::Custom => "custom",
+    //         AuthType::Unknown => "unknown",
+    //     }
+    // }
 }
 

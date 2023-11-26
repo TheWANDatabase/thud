@@ -28,7 +28,7 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
 
     let state = unsafe { SOCKET_STATE.get_mut().unwrap() };
     state.insert(socket.id.clone().to_string(), SocketStateInformation::new());
-    state.get_mut(&socket.id.to_string()).unwrap().connection_ip = Some(socket.().unwrap().ip().clone());
+    // state.get_mut(&socket.id.to_string()).unwrap().connection_ip = Some(socket().unwrap().ip().clone());
 
     socket.emit("welcome", welcome).ok();
 
@@ -69,8 +69,8 @@ fn on_connect(socket: SocketRef, Data(data): Data<Value>) {
 
                 state.get_mut(&socket.id.to_string()).unwrap().authenticated = true;
                 state.get_mut(&socket.id.to_string()).unwrap().auth_method = Some(AuthType::Federation);
-                state.get_mut(&socket.id.to_string()).unwrap().is_federated = true;
-                state.get_mut(&socket.id.to_string()).unwrap().federation_ip = Some(data.auth_data.unwrap().parse().unwrap());
+                // state.get_mut(&socket.id.to_string()).unwrap().is_federated = true;
+                // state.get_mut(&socket.id.to_string()).unwrap().federation_ip = Some(data.auth_data.unwrap().parse().unwrap());
                 ack.send(AuthResponsePayload {
                     authenticated: true,
                     error: None,
@@ -127,8 +127,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (layer, io) = SocketIo::new_layer();
 
-    io.;
-
     io.ns("/", on_connect);
     io.ns("/custom", on_connect);
 
@@ -138,7 +136,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting server");
 
-    Server::bind(&"127.0.0.1:3000".parse().unwrap())
+    Server::bind(&"0.0.0.0:3001".parse().unwrap())
         .serve(app.into_make_service())
         .await?;
 

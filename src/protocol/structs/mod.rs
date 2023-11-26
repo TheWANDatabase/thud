@@ -1,9 +1,10 @@
 use std::collections::HashMap;
-use std::net::{IpAddr, Ipv6Addr};
 
 use serde::{Deserialize, Serialize};
 
 use crate::protocol::enums::AuthType;
+
+// use std::net::{IpAddr, Ipv6Addr};
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -34,9 +35,9 @@ pub struct SocketStateInformation {
     pub authenticated: bool,
     pub auth_method: Option<AuthType>,
     pub subscriptions: HashMap<String, bool>,
-    pub is_federated: bool,
-    pub federation_ip: Option<Ipv6Addr>,
-    pub connection_ip: Option<IpAddr>,
+    // pub is_federated: bool,
+    // pub federation_ip: Option<Ipv6Addr>,
+    // pub connection_ip: Option<IpAddr>,
 }
 
 impl SocketStateInformation {
@@ -45,9 +46,9 @@ impl SocketStateInformation {
             authenticated: false,
             auth_method: None,
             subscriptions: HashMap::new(),
-            is_federated: false,
-            federation_ip: None,
-            connection_ip: None,
+            // is_federated: false,
+            // federation_ip: None,
+            // connection_ip: None,
         };
     }
 }
