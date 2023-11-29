@@ -8,7 +8,38 @@ import {
 
 import { instrument } from "@socket.io/admin-ui";
 
-const httpServer = createServer();
+const httpServer = createServer((req, res) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "*" /* @dev First, read about security */,
+    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
+    "Access-Control-Max-Age": 2592000, // 30 days
+    /** add other headers as per requirement */
+  };
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, headers);
+    res.end();
+    return;
+  }
+
+  console.log(req.method, req.url);
+  if (req.url === "/") {
+    res.end("Hello world");
+  } else if (req.url === "/tiles" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      const data = JSON.parse(body);
+      io.to(data.payload.room).emit(
+        data.payload.event ?? "message",
+        JSON.stringify(data.payload.data),
+      );
+      res.end("ok");
+    });
+  }
+});
 
 const io = new Server(httpServer, {
   cors: {
@@ -52,26 +83,6 @@ io.on("connection", (socket) => {
       console.log(body);
     }
   });
-});
-
-httpServer.on("request", (req, res) => {
-  console.log(req.method, req.url);
-  if (req.url === "/") {
-    res.end("Hello world");
-  } else if (req.url === "/tiles" && req.method === "POST") {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", () => {
-      const data = JSON.parse(body);
-      io.to(data.payload.room).emit(
-        data.payload.event ?? "message",
-        JSON.stringify(data.payload.data),
-      );
-      res.end("ok");
-    });
-  }
 });
 
 httpServer.listen(3000, () => {
