@@ -32,6 +32,7 @@ const httpServer = createServer((req, res) => {
     });
     req.on("end", () => {
       const data = JSON.parse(body);
+      console.log(data);
       io.to(data.payload.room).emit(
         data.payload.event ?? "message",
         JSON.stringify(data.payload.data),
