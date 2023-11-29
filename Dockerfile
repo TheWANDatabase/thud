@@ -1,16 +1,17 @@
-FROM rust:1.74.0 as builder
-LABEL authors="altrius"
+FROM node:21.2.0-alpine3.17 as build
 
 WORKDIR /app
 
-COPY ./src ./src
-COPY ./Cargo.toml ./Cargo.toml
-COPY ./Cargo.lock ./Cargo.lock
+COPY ./src src
+COPY package.json .
+COPY bun.lockb .
+COPY tsconfig.json .
+RUN bun install
 
-RUN cargo build --release
 
-FROM rust:1.74.0 as runtime
-LABEL authors="altrius"
-COPY --from=builder /app/target/release/thud /usr/local/bin/thud
+FROM node:21.2.0-alpine3.17 as runtime
 
-ENTRYPOINT ["/usr/local/bin/thud"]
+WORKDIR /app
+
+COPY --from=build /app .
+CMD ["bun", "src/main.ts"]
