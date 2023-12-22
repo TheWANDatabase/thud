@@ -7,6 +7,15 @@ import {
 } from "./types/core";
 
 import { instrument } from "@socket.io/admin-ui";
+import * as console from "console";
+
+const stats: any = {
+  connections: {
+    peak: 0,
+    current: 0,
+  },
+  mem: process.memoryUsage(),
+};
 
 const httpServer = createServer((req, res) => {
   const headers = {
@@ -25,6 +34,8 @@ const httpServer = createServer((req, res) => {
   console.log(req.method, req.url);
   if (req.url === "/") {
     res.end("Hello world");
+  } else if (req.url === "/stats") {
+    res.write(JSON.stringify(stats));
   } else if (req.url === "/tiles" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
@@ -61,6 +72,15 @@ instrument(io, {
 
 io.on("connection", (socket) => {
   console.log("connected");
+  stats.connections.current += 1;
+  if (stats.connections.current > stats.connections.peak)
+    stats.connections.peak = stats.connections.current;
+
+  socket.on("disconnect", () => {
+    console.log("disconnected");
+    stats.connections.current -= 1;
+  });
+
   socket.on("message", (data, ack) => {
     const body = JSON.parse(data) as CoreMessage<unknown>;
 
