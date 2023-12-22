@@ -35,7 +35,8 @@ const httpServer = createServer((req, res) => {
   if (req.url === "/") {
     res.end("Hello world");
   } else if (req.url === "/stats") {
-    res.write(JSON.stringify(stats));
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(stats));
   } else if (req.url === "/tiles" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
