@@ -1,6 +1,5 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
-import * as prometheus from "socket.io-prometheus-metrics";
 import {
   ActionTypes,
   type BroadcastMessage,
@@ -8,6 +7,8 @@ import {
 } from "./types/core";
 import { instrument } from "@socket.io/admin-ui";
 import * as console from "console";
+import * as ioMetrics from "socket.io-prometheus";
+import { register as promRegister } from "prom-client";
 
 const stats: any = {
   connections: {
@@ -36,9 +37,8 @@ instrument(io, {
   mode: "development",
 });
 
-prometheus.metrics(io, {
-  collectDefaultMetrics: true,
-});
+// start collecting socket.io metrics
+ioMetrics(io);
 
 io.on("connection", (socket) => {
   console.log("connected");
@@ -100,6 +100,9 @@ function requestHandler(req: any, res: any): void {
   } else if (req.url === "/stats") {
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(stats));
+  } else if (req.url === "/metrics" && req.method === "GET") {
+    res.set("Content-Type", promRegister.contentType);
+    res.end(promRegister.metrics());
   } else if (req.url === "/tiles" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk: any) => {
