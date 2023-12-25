@@ -8,7 +8,7 @@ import {
 import { instrument } from "@socket.io/admin-ui";
 import * as console from "console";
 // @ts-expect-error Types do not exist for this module
-import * as ioMetrics from "socket.io-prometheus";
+import ioMetrics from "socket.io-prometheus";
 import { register as promRegister } from "prom-client";
 
 const stats: any = {
