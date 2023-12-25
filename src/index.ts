@@ -6,10 +6,20 @@ import {
   type CoreMessage,
 } from "./types/core";
 import { instrument } from "@socket.io/admin-ui";
-import * as console from "console";
-// @ts-expect-error Types do not exist for this module
+import * as console from "console"; // @ts-expect-error Types do not exist for this module
 import ioMetrics from "socket.io-prometheus";
 import { register as promRegister } from "prom-client";
+import express from "express";
+import cors from "cors";
+
+const app = express();
+app.use(
+  cors({
+    origin: "*",
+    optionsSuccessStatus: 200,
+    credentials: true,
+  }),
+);
 
 const stats: any = {
   connections: {
@@ -19,13 +29,14 @@ const stats: any = {
   mem: process.memoryUsage(),
 };
 
-const httpServer = createServer(requestHandler);
+const http = createServer(app);
 
-const io = new Server(httpServer, {
+const io = new Server(http, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
+    maxAge: 2592000,
   },
 });
 
@@ -77,46 +88,30 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(80, () => {
+http.listen(80, () => {
   console.log("listening on *:80");
 });
 
-function requestHandler(req: any, res: any): void {
-  const headers = {
-    "Access-Control-Allow-Origin": "*" /* @dev First, read about security */,
-    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
-    "Access-Control-Max-Age": 2592000, // 30 days
-    /** add other headers as per requirement */
-  };
+app.get("/", (req, res) => {
+  res.send("Hello, World!");
+});
 
-  if (req.method === "OPTIONS") {
-    res.writeHead(204, headers);
-    res.end();
-    return;
-  }
+app.get("/stats", (req, res) => {
+  res.json(stats);
+});
 
-  console.log(req.method, req.url);
-  if (req.url === "/") {
-    res.end("Hello world");
-  } else if (req.url === "/stats") {
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(stats));
-  } else if (req.url === "/metrics" && req.method === "GET") {
-    res.setHeader("Content-Type", promRegister.contentType);
-    promRegister.metrics().then(res.end);
-  } else if (req.url === "/tiles" && req.method === "POST") {
-    let body = "";
-    req.on("data", (chunk: any) => {
-      body += chunk;
-    });
-    req.on("end", () => {
-      const data = JSON.parse(body);
-      console.log(data);
-      io.to(data.payload.room).emit(
-        data.payload.event ?? "message",
-        JSON.stringify(data.payload.data),
-      );
-      res.end("ok");
-    });
-  }
-}
+app.get("/metrics", async (req, res) => {
+  res.setHeader("Content-Type", promRegister.contentType);
+  res.send(await promRegister.metrics());
+});
+
+app.post("/tiles", (req, res) => {
+  const body = req.body;
+  const data = JSON.parse(body);
+  console.log(data);
+  io.to(data.payload.room).emit(
+    data.payload.event ?? "message",
+    JSON.stringify(data.payload.data),
+  );
+  res.end("ok");
+});
