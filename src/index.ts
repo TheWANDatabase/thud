@@ -103,7 +103,7 @@ function requestHandler(req: any, res: any): void {
     res.end(JSON.stringify(stats));
   } else if (req.url === "/metrics" && req.method === "GET") {
     res.setHeader("Content-Type", promRegister.contentType);
-    res.end(promRegister.metrics());
+    promRegister.metrics().then(res.end);
   } else if (req.url === "/tiles" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk: any) => {
