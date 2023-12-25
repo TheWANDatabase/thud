@@ -88,10 +88,6 @@ io.on("connection", (socket) => {
   });
 });
 
-http.listen(80, () => {
-  console.log("listening on *:80");
-});
-
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
@@ -114,4 +110,8 @@ app.post("/tiles", (req, res) => {
     JSON.stringify(data.payload.data),
   );
   res.end("ok");
+});
+
+http.listen(15674, () => {
+  console.log("listening on *:15674");
 });
