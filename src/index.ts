@@ -1,11 +1,11 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
+import * as prometheus from "socket.io-prometheus-metrics";
 import {
   ActionTypes,
   type BroadcastMessage,
   type CoreMessage,
 } from "./types/core";
-
 import { instrument } from "@socket.io/admin-ui";
 import * as console from "console";
 
@@ -17,42 +17,7 @@ const stats: any = {
   mem: process.memoryUsage(),
 };
 
-const httpServer = createServer((req, res) => {
-  const headers = {
-    "Access-Control-Allow-Origin": "*" /* @dev First, read about security */,
-    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
-    "Access-Control-Max-Age": 2592000, // 30 days
-    /** add other headers as per requirement */
-  };
-
-  if (req.method === "OPTIONS") {
-    res.writeHead(204, headers);
-    res.end();
-    return;
-  }
-
-  console.log(req.method, req.url);
-  if (req.url === "/") {
-    res.end("Hello world");
-  } else if (req.url === "/stats") {
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(stats));
-  } else if (req.url === "/tiles" && req.method === "POST") {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", () => {
-      const data = JSON.parse(body);
-      console.log(data);
-      io.to(data.payload.room).emit(
-        data.payload.event ?? "message",
-        JSON.stringify(data.payload.data),
-      );
-      res.end("ok");
-    });
-  }
-});
+const httpServer = createServer(requestHandler);
 
 const io = new Server(httpServer, {
   cors: {
@@ -69,6 +34,10 @@ instrument(io, {
     password: "$2b$10$heqvAkYMez.Va6Et2uXInOnkCT6/uQj1brkrbyG3LpopDklcq7ZOS", // "changeit" encrypted with bcrypt
   },
   mode: "development",
+});
+
+prometheus.metrics(io, {
+  collectDefaultMetrics: true,
 });
 
 io.on("connection", (socket) => {
@@ -107,6 +76,43 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(15674, () => {
-  console.log("listening on *:15674");
+httpServer.listen(80, () => {
+  console.log("listening on *:80");
 });
+
+function requestHandler(req: any, res: any): void {
+  const headers = {
+    "Access-Control-Allow-Origin": "*" /* @dev First, read about security */,
+    "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
+    "Access-Control-Max-Age": 2592000, // 30 days
+    /** add other headers as per requirement */
+  };
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, headers);
+    res.end();
+    return;
+  }
+
+  console.log(req.method, req.url);
+  if (req.url === "/") {
+    res.end("Hello world");
+  } else if (req.url === "/stats") {
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(stats));
+  } else if (req.url === "/tiles" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk: any) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      const data = JSON.parse(body);
+      console.log(data);
+      io.to(data.payload.room).emit(
+        data.payload.event ?? "message",
+        JSON.stringify(data.payload.data),
+      );
+      res.end("ok");
+    });
+  }
+}
