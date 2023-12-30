@@ -9,7 +9,7 @@ import { instrument } from "@socket.io/admin-ui";
 import * as console from "console"; // @ts-expect-error Types do not exist for this module
 import ioMetrics from "socket.io-prometheus";
 import { register as promRegister } from "prom-client";
-import express from "express";
+import express, { json } from "express";
 import cors from "cors";
 
 const app = express();
@@ -20,6 +20,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use(json())
 
 const stats: any = {
   connections: {
