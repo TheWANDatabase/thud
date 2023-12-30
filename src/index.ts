@@ -98,9 +98,10 @@ app.get("/stats", (req, res) => {
   res.json(stats);
 });
 
-app.get("/metrics", (req, res) => {
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+app.get("/metrics", async(req, res) => {
   res.setHeader("Content-Type", promRegister.contentType);
-  void promRegister.metrics().then(res.send);
+  res.send(await promRegister.metrics());
 });
 
 app.post("/tiles", (req, res) => {
