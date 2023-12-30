@@ -104,8 +104,7 @@ app.get("/metrics", async (req, res) => {
 });
 
 app.post("/tiles", (req, res) => {
-  const body = req.body;
-  const data = JSON.parse(body);
+  const data = req.body;
   console.log(data);
   io.to(data.payload.room).emit(
     data.payload.event ?? "message",
