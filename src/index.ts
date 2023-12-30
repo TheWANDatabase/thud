@@ -98,9 +98,9 @@ app.get("/stats", (req, res) => {
   res.json(stats);
 });
 
-app.get("/metrics", async (req, res) => {
+app.get("/metrics", (req, res) => {
   res.setHeader("Content-Type", promRegister.contentType);
-  res.send(await promRegister.metrics());
+  void promRegister.metrics().then(res.send);
 });
 
 app.post("/tiles", (req, res) => {
