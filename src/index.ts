@@ -104,6 +104,14 @@ app.get("/metrics", async(req, res) => {
   res.send(await promRegister.metrics());
 });
 
+app.post("/yt/:id", async (req, res) => {
+    io.to("youtube").emit("stream_detector", JSON.stringify({
+        id: req.params.id,
+        body: req.body
+    }));
+    res.status(200).send("ok");
+})
+
 app.post("/tiles", (req, res) => {
   const data = req.body;
   console.log(data);
