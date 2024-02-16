@@ -138,19 +138,19 @@ io.on("connection", async (socket) => {
 
       switch (request.payload.room) {
         case "youtube":
-          stats.youtube.messages.inc(1);
+          stats.youtube.messages.inc(1 + rooms.youtube.length);
           stats.youtube.messagesInbound.inc(1);
           stats.youtube.messagesOutbound.inc(rooms.youtube.length);
           break;
 
         case "bingo":
-          stats.bingo.messages.inc(1);
+          stats.bingo.messages.inc(1 + rooms.bingo.length);
           stats.bingo.messagesInbound.inc(1);
           stats.bingo.messagesOutbound.inc(rooms.bingo.length);
           break;
 
         case "live":
-          stats.live.messages.inc(1);
+          stats.live.messages.inc(1 + rooms.live.length);
           stats.live.messagesInbound.inc(1);
           stats.live.messagesOutbound.inc(rooms.live.length);
           break;
