@@ -2,7 +2,6 @@ import * as prometheus from "prom-client";
 
 
 const defaultMetrics = prometheus.collectDefaultMetrics;
-const register = new prometheus.Registry();
 
 const stats = {
   connections: {
@@ -39,26 +38,6 @@ const stats = {
     messagesOutbound: new prometheus.Gauge({
       name: "thud_thud_messages_outbound",
       help: "Number of thud messages",
-    }),
-  },
-  memory: {
-    heap: {
-      total: new prometheus.Gauge({
-        name: "thud_memory_heap_total",
-        help: "Total heap memory",
-      }),
-      used: new prometheus.Gauge({
-        name: "thud_memory_heap_used",
-        help: "Used heap memory",
-      }),
-    },
-    external: new prometheus.Gauge({
-      name: "thud_memory_external",
-      help: "External memory",
-    }),
-    rss: new prometheus.Gauge({
-      name: "thud_memory_rss",
-      help: "Resident set size",
     }),
   },
   chat: {
@@ -161,10 +140,6 @@ prometheus.register.registerMetric(stats.connections.total);
 prometheus.register.registerMetric(stats.thud.messages);
 prometheus.register.registerMetric(stats.thud.messagesInbound);
 prometheus.register.registerMetric(stats.thud.messagesOutbound);
-prometheus.register.registerMetric(stats.memory.heap.total);
-prometheus.register.registerMetric(stats.memory.heap.used);
-prometheus.register.registerMetric(stats.memory.external);
-prometheus.register.registerMetric(stats.memory.rss);
 prometheus.register.registerMetric(stats.chat.connections);
 prometheus.register.registerMetric(stats.chat.messages);
 prometheus.register.registerMetric(stats.chat.messagesInbound);

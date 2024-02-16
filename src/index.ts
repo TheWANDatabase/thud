@@ -60,6 +60,8 @@ io.on("connection", async (socket) => {
 
   // Increment the appropriate metrics
   stats.connections.current.inc(1);
+  stats.connections.created.inc(1);
+  stats.connections.total.inc(1);
   if ((await stats.connections.current.get()).values[0].value > (await stats.connections.peak.get()).values[0].value)
     stats.connections.peak.set((await stats.connections.current.get()).values[0].value);
 
@@ -98,7 +100,7 @@ io.on("connection", async (socket) => {
     }
     if (rooms.bingo.includes(socket.id)) rooms.bingo = rooms.bingo.filter((id) => id !== socket.id);
     if (rooms.live.includes(socket.id)) rooms.live = rooms.live.filter((id) => id !== socket.id);
-
+    stats.connections.terminated.inc(1);
     stats.connections.current.dec(1);
   });
 
