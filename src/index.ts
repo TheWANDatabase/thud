@@ -67,7 +67,7 @@ io.on("connection", async (socket) => {
 
 
   // Determine the referrer
-  const referrer = socket.request.headers.referer ?? "Unknown";
+  const referrer = socket.request.headers.referer ?? socket.request.headers.origin ?? "Unknown";
 
   if (/.*\.{0,1}whenplane\.com/.test(referrer)) {
     sources.whenplane++;
