@@ -63,6 +63,10 @@ const stats = {
       name: "thud_whenplane_connections",
       help: "Number of whenplane connections",
     }),
+    peak: new prometheus.Gauge({
+      name: "thud_whenplane_connections_peak",
+      help: "Number of whenplane connections at peak",
+    }),
     messages: new prometheus.Gauge({
       name: "thud_whenplane_messages",
       help: "Number of whenplane messages",
@@ -98,6 +102,10 @@ const stats = {
     connections: new prometheus.Gauge({
       name: "thud_bingo_connections",
       help: "Number of bingo connections",
+    }),
+    peak: new prometheus.Gauge({
+      name: "thud_bingo_connections_peak",
+      help: "Number of bingo connections at peak",
     }),
     messages: new prometheus.Gauge({
       name: "thud_bingo_messages",
@@ -145,6 +153,7 @@ prometheus.register.registerMetric(stats.chat.messages);
 prometheus.register.registerMetric(stats.chat.messagesInbound);
 prometheus.register.registerMetric(stats.chat.messagesOutbound);
 prometheus.register.registerMetric(stats.whenplane.connections);
+prometheus.register.registerMetric(stats.whenplane.peak);
 prometheus.register.registerMetric(stats.whenplane.messages);
 prometheus.register.registerMetric(stats.whenplane.messagesInbound);
 prometheus.register.registerMetric(stats.whenplane.messagesOutbound);
@@ -153,6 +162,7 @@ prometheus.register.registerMetric(stats.youtube.messages);
 prometheus.register.registerMetric(stats.youtube.messagesInbound);
 prometheus.register.registerMetric(stats.youtube.messagesOutbound);
 prometheus.register.registerMetric(stats.bingo.connections);
+prometheus.register.registerMetric(stats.bingo.peak);
 prometheus.register.registerMetric(stats.bingo.messages);
 prometheus.register.registerMetric(stats.bingo.messagesInbound);
 prometheus.register.registerMetric(stats.bingo.messagesOutbound);
