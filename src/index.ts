@@ -74,13 +74,13 @@ io.on("connection", async (socket) => {
     stats.whenplane.connections.inc(1);
 
     if ((await stats.whenplane.connections.get()).values[0].value > (await stats.whenplane.peak.get()).values[0].value)
-    stats.whenplane.peak.set((await stats.whenplane.connections.get()).values[0].value);
+      stats.whenplane.peak.set((await stats.whenplane.connections.get()).values[0].value);
   } else if (/.*\.{0,1}wanshow\.bingo/.test(referrer)) {
     sources.bingo++;
     stats.bingo.connections.inc(1);
 
     if ((await stats.bingo.connections.get()).values[0].value > (await stats.bingo.peak.get()).values[0].value)
-    stats.bingo.peak.set((await stats.bingo.connections.get()).values[0].value);
+      stats.bingo.peak.set((await stats.bingo.connections.get()).values[0].value);
   } else {
     sources.other++;
   }
@@ -112,10 +112,15 @@ io.on("connection", async (socket) => {
 
 
   // Handle socket.io messages
-  socket.on("message", (data, ack) => {
+  socket.on("message", (data: CoreMessage<unknown> | string, ack) => {
     stats.thud.messages.inc(1);
     stats.thud.messagesInbound.inc(1);
-    const body = JSON.parse(data) as CoreMessage<unknown>;
+    let body
+    if (typeof data === "string") {
+      body = JSON.parse(data) as CoreMessage<unknown>;
+    } else {
+      body = data;
+    }
 
     // Handle any subscription messages
     if (body.type === ActionTypes.SUBSCRIBE) {
