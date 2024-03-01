@@ -141,16 +141,15 @@ io.on("connection", async (socket) => {
     stats.connections.current.dec(1);
   });
 
-  socket.on("state_sync", (text, ack) => {
-    const payload = JSON.stringify({
-      ...details,
-      state: lastState,
-    });
-
-    console.log(text, payload);
-
-    ack(payload);
+  socket.timeout(1000).emitWithAck("state_sync", JSON.stringify({
+    ...details,
+    state: lastState,
+  })).then((data) => {
+    console.log("ack", data);
+  }, (error) => {
+    console.log("error", error);
   });
+
 
   // Handle socket.io messages
   socket.on("message", (data: CoreMessage<unknown> | string, ack) => {
