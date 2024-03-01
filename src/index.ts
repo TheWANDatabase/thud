@@ -141,13 +141,13 @@ io.on("connection", async (socket) => {
     stats.connections.current.dec(1);
   });
 
-  socket.on("state_sync", (_, ack) => {
+  socket.on("state_sync", (text, ack) => {
     const payload = JSON.stringify({
       ...details,
       state: lastState,
     });
 
-    console.log(payload);
+    console.log(text, payload);
 
     ack(payload);
   });
