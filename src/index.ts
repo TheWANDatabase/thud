@@ -142,12 +142,14 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("state_sync", (_, ack) => {
-    ack(
-      JSON.stringify({
-        ...details,
-        state: lastState,
-      }),
-    );
+    const payload = JSON.stringify({
+      ...details,
+      state: lastState,
+    });
+
+    console.log(payload);
+
+    ack(payload);
   });
 
   // Handle socket.io messages
