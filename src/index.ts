@@ -10,8 +10,12 @@ import * as console from "node:console";
 import express, { json } from "express";
 import cors from "cors";
 import { prometheus, stats } from "./types/metrics";
+import { Features } from "./types/bits";
 
-
+const details = {
+  version: "0.1.1",
+  features: new Features(true, true, true, false).toInt(),
+};
 
 // Initialize the server
 const app = express();
@@ -50,37 +54,62 @@ const sources = {
   whenplane: 0,
   bingo: 0,
   other: 0,
-}
+};
 
+let lastState: any = {
+  live: false,
+  isWan: false,
+  title: "Unknown",
+  description: "Unknown",
+  thumbnail: "Unknown",
+  imminence: 0,
+  textImminence: "Distant",
+};
 
 // Handle socket.io connections
 io.on("connection", async (socket) => {
-
   console.log("connected");
 
   // Increment the appropriate metrics
   stats.connections.current.inc(1);
   stats.connections.created.inc(1);
   stats.connections.total.inc(1);
-  if ((await stats.connections.current.get()).values[0].value > (await stats.connections.peak.get()).values[0].value)
-    stats.connections.peak.set((await stats.connections.current.get()).values[0].value);
-
+  if (
+    (await stats.connections.current.get()).values[0].value >
+    (await stats.connections.peak.get()).values[0].value
+  )
+    stats.connections.peak.set(
+      (await stats.connections.current.get()).values[0].value,
+    );
 
   // Determine the referrer
-  const referrer = socket.request.headers.referer ?? socket.request.headers.origin ?? "Unknown";
+  const referrer =
+    socket.request.headers.referer ??
+    socket.request.headers.origin ??
+    "Unknown";
 
   if (/.*\.{0,1}whenplane\.com/.test(referrer)) {
     sources.whenplane++;
     stats.whenplane.connections.inc(1);
 
-    if ((await stats.whenplane.connections.get()).values[0].value > (await stats.whenplane.peak.get()).values[0].value)
-      stats.whenplane.peak.set((await stats.whenplane.connections.get()).values[0].value);
+    if (
+      (await stats.whenplane.connections.get()).values[0].value >
+      (await stats.whenplane.peak.get()).values[0].value
+    )
+      stats.whenplane.peak.set(
+        (await stats.whenplane.connections.get()).values[0].value,
+      );
   } else if (/.*\.{0,1}wanshow\.bingo/.test(referrer)) {
     sources.bingo++;
     stats.bingo.connections.inc(1);
 
-    if ((await stats.bingo.connections.get()).values[0].value > (await stats.bingo.peak.get()).values[0].value)
-      stats.bingo.peak.set((await stats.bingo.connections.get()).values[0].value);
+    if (
+      (await stats.bingo.connections.get()).values[0].value >
+      (await stats.bingo.peak.get()).values[0].value
+    )
+      stats.bingo.peak.set(
+        (await stats.bingo.connections.get()).values[0].value,
+      );
   } else {
     sources.other++;
   }
@@ -104,18 +133,28 @@ io.on("connection", async (socket) => {
       rooms.youtube = rooms.youtube.filter((id) => id !== socket.id);
       stats.youtube.connections.dec(1);
     }
-    if (rooms.bingo.includes(socket.id)) rooms.bingo = rooms.bingo.filter((id) => id !== socket.id);
-    if (rooms.live.includes(socket.id)) rooms.live = rooms.live.filter((id) => id !== socket.id);
+    if (rooms.bingo.includes(socket.id))
+      rooms.bingo = rooms.bingo.filter((id) => id !== socket.id);
+    if (rooms.live.includes(socket.id))
+      rooms.live = rooms.live.filter((id) => id !== socket.id);
     stats.connections.terminated.inc(1);
     stats.connections.current.dec(1);
   });
 
+  socket.on("state_sync", (_, ack) => {
+    ack(
+      JSON.stringify({
+        ...details,
+        state: lastState,
+      }),
+    );
+  });
 
   // Handle socket.io messages
   socket.on("message", (data: CoreMessage<unknown> | string, ack) => {
     stats.thud.messages.inc(1);
     stats.thud.messagesInbound.inc(1);
-    let body
+    let body;
     if (typeof data === "string") {
       body = JSON.parse(data) as CoreMessage<unknown>;
     } else {
@@ -161,6 +200,7 @@ io.on("connection", async (socket) => {
           break;
 
         case "live":
+          lastState = request.payload.data;
           stats.live.messages.inc(1 + rooms.live.length);
           stats.live.messagesInbound.inc(1);
           stats.live.messagesOutbound.inc(rooms.live.length);
@@ -216,12 +256,15 @@ app.post("/yt/:id", (req, res) => {
   stats.youtube.messagesInbound.inc(1);
   stats.youtube.messagesOutbound.inc(rooms.youtube.length);
 
-  io.to("youtube").emit("stream_detector", JSON.stringify({
-    id: req.params.id,
-    body: req.body
-  }));
+  io.to("youtube").emit(
+    "stream_detector",
+    JSON.stringify({
+      id: req.params.id,
+      body: req.body,
+    }),
+  );
   res.status(200).send("ok");
-})
+});
 
 // Handle bingo tile updates
 app.post("/tiles", (req, res) => {
