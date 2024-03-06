@@ -211,7 +211,8 @@ io.on("connection", async (socket) => {
           break;
 
         case "live":
-          lastState = Object.apply(lastState, request.payload.data as any);
+          lastState = Object.assign(lastState, request.payload.data as any);
+          request.payload.data = lastState;
           stats.live.messages.inc(1 + rooms.live.length);
           stats.live.messagesInbound.inc(1);
           stats.live.messagesOutbound.inc(rooms.live.length);
