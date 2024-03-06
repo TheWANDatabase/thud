@@ -64,6 +64,8 @@ let lastState: any = {
   thumbnail: "Unknown",
   imminence: 0,
   textImminence: "Distant",
+  sponsors: [],
+  streamUrl: "Unknown",
 };
 
 // Handle socket.io connections
@@ -141,15 +143,23 @@ io.on("connection", async (socket) => {
     stats.connections.current.dec(1);
   });
 
-  socket.timeout(1000).emitWithAck("state_sync", JSON.stringify({
-    ...details,
-    state: lastState,
-  })).then((data) => {
-    console.log("ack", data);
-  }, (error) => {
-    console.log("error", error);
-  });
-
+  socket
+    .timeout(1000)
+    .emitWithAck(
+      "state_sync",
+      JSON.stringify({
+        ...details,
+        state: lastState,
+      }),
+    )
+    .then(
+      (data) => {
+        console.log("ack", data);
+      },
+      (error) => {
+        console.log("error", error);
+      },
+    );
 
   // Handle socket.io messages
   socket.on("message", (data: CoreMessage<unknown> | string, ack) => {
@@ -201,7 +211,7 @@ io.on("connection", async (socket) => {
           break;
 
         case "live":
-          lastState = request.payload.data;
+          lastState = Object.apply(lastState, request.payload.data as any);
           stats.live.messages.inc(1 + rooms.live.length);
           stats.live.messagesInbound.inc(1);
           stats.live.messagesOutbound.inc(rooms.live.length);
