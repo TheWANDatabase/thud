@@ -68,6 +68,11 @@ let lastState: any = {
   streamUrl: "Unknown",
 };
 
+// Broadcast server stats to the management room every 5 seconds
+setInterval(() => {
+  io.to("mgmt").emit("mgmt.stats", JSON.stringify(stats));
+}, 5e3);
+
 // Handle socket.io connections
 io.on("connection", async (socket) => {
   console.log("connected");
@@ -142,7 +147,7 @@ io.on("connection", async (socket) => {
     stats.connections.terminated.inc(1);
     stats.connections.current.dec(1);
   });
-
+  console.log(typeof lastState, lastState);
   socket
     .timeout(1000)
     .emitWithAck(
@@ -160,6 +165,34 @@ io.on("connection", async (socket) => {
         console.log("error", error);
       },
     );
+
+  // Handle socket.io room join events
+  socket.on("join", (room: string, ack) => {
+    stats.thud.messages.inc(1);
+    stats.thud.messagesInbound.inc(1);
+    void socket.join(room);
+    switch (room) {
+      case "youtube":
+        rooms.youtube.push(socket.id);
+        stats.youtube.connections.inc(1);
+        break;
+      case "bingo":
+        rooms.bingo.push(socket.id);
+        stats.bingo.connections.inc(1);
+        break;
+      case "live":
+        rooms.live.push(socket.id);
+        stats.live.connections.inc(1);
+        break;
+
+      case "mgmt":
+        socket.join("mgmt");
+        io.to("mgmt").emit("state_sync", JSON.stringify(lastState));
+        io.to("mgmt").emit("sources_sync", JSON.stringify(sources));
+        break;
+    }
+    if (ack !== undefined) ack("ok");
+  });
 
   // Handle socket.io messages
   socket.on("message", (data: CoreMessage<unknown> | string, ack) => {
