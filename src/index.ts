@@ -150,13 +150,10 @@ io.on("connection", async (socket) => {
   console.log(typeof lastState, lastState);
   socket
     .timeout(1000)
-    .emitWithAck(
-      "state_sync",
-      JSON.stringify({
-        ...details,
-        state: lastState,
-      }),
-    )
+    .emitWithAck("state_sync", {
+      ...details,
+      state: lastState,
+    })
     .then(
       (data) => {
         console.log("ack", data);
