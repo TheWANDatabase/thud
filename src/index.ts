@@ -164,26 +164,29 @@ io.on("connection", async (socket) => {
     );
 
   // Handle socket.io room join events
-  socket.on("join", (room: string, ack) => {
+  socket.on("join", async (room: string, ack) => {
     stats.thud.messages.inc(1);
     stats.thud.messagesInbound.inc(1);
     void socket.join(room);
     switch (room) {
       case "youtube":
+        await socket.join("youtube");
         rooms.youtube.push(socket.id);
         stats.youtube.connections.inc(1);
         break;
       case "bingo":
+        await socket.join("bingo");
         rooms.bingo.push(socket.id);
         stats.bingo.connections.inc(1);
         break;
       case "live":
+        await socket.join("live");
         rooms.live.push(socket.id);
         stats.live.connections.inc(1);
         break;
 
       case "mgmt":
-        socket.join("mgmt");
+        await socket.join("mgmt");
         io.to("mgmt").emit("state_sync", JSON.stringify(lastState));
         io.to("mgmt").emit("sources_sync", JSON.stringify(sources));
         break;
