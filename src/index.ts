@@ -59,7 +59,7 @@ const sources = {
 let lastState: any = {
   live: false,
   isWan: false,
-  wan: false,
+  isAfterparty: false,
   title: "Unknown",
   description: "Unknown",
   thumbnail: {
