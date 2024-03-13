@@ -13,7 +13,7 @@ import { prometheus, stats } from "./types/metrics";
 import { Features } from "./types/bits";
 
 const details = {
-  version: "0.1.1",
+  version: "0.1.2",
   features: new Features(true, true, true, false).toInt(),
 };
 
@@ -147,28 +147,25 @@ io.on("connection", async (socket) => {
     stats.connections.terminated.inc(1);
     stats.connections.current.dec(1);
   });
-  console.log(typeof lastState, lastState);
-  socket
-    .timeout(1000)
-    .emitWithAck("state_sync", {
-      ...details,
-      state: lastState,
-    })
-    .then(
-      (data) => {
-        console.log("ack", data);
-      },
-      (error) => {
-        console.log("error", error);
-      },
-    );
+
+  socket.timeout(1000).emit("state_sync", {
+    ...details,
+    state: lastState,
+  });
+
+  socket.on("state_sync", (data) => {
+    console.log("state_sync", data);
+    lastState = data;
+
+    io.to("live").emit("live", JSON.stringify(data));
+  });
 
   // Handle socket.io room join events
-  socket.on("join", async (room: string, ack) => {
+  socket.on("join", async ({ id }, ack) => {
     stats.thud.messages.inc(1);
     stats.thud.messagesInbound.inc(1);
-    void socket.join(room);
-    switch (room) {
+    void socket.join(id);
+    switch (id) {
       case "youtube":
         await socket.join("youtube");
         rooms.youtube.push(socket.id);
@@ -190,6 +187,9 @@ io.on("connection", async (socket) => {
         io.to("mgmt").emit("state_sync", JSON.stringify(lastState));
         io.to("mgmt").emit("sources_sync", JSON.stringify(sources));
         break;
+
+      default:
+        if (ack !== undefined) return ack("error");
     }
     if (ack !== undefined) ack("ok");
   });
