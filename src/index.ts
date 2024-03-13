@@ -62,7 +62,12 @@ let lastState: any = {
   wan: false,
   title: "Unknown",
   description: "Unknown",
-  thumbnail: "Unknown",
+  thumbnail: {
+    width: 0,
+    height: 0,
+    path: "Unknown",
+    childImages: []
+  },
   imminence: 0,
   textImminence: "Distant",
   sponsors: [],
