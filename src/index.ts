@@ -155,7 +155,7 @@ io.on("connection", async (socket) => {
 
   socket.on("state_sync", (data) => {
     console.log("state_sync", data);
-    lastState = data;
+    lastState = Object.assign(lastState, data);
 
     io.to("live").emit("live", JSON.stringify(data));
   });
@@ -244,7 +244,7 @@ io.on("connection", async (socket) => {
           break;
 
         case "live":
-          lastState = Object.assign(lastState, request.payload.data as any);
+          // lastState = Object.assign(lastState, request.payload.data as any);
           request.payload.data = lastState;
           stats.live.messages.inc(1 + rooms.live.length);
           stats.live.messagesInbound.inc(1);
