@@ -69,7 +69,7 @@ let lastState: any = {
     childImages: []
   },
   imminence: 0,
-  textImminence: "Distant",
+  textImminence: "distant",
   sponsors: [],
   streamUrl: "Unknown",
 };
