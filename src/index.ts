@@ -59,6 +59,7 @@ const sources = {
 let lastState: any = {
   live: false,
   isWan: false,
+  wan: false,
   title: "Unknown",
   description: "Unknown",
   thumbnail: "Unknown",
@@ -69,9 +70,9 @@ let lastState: any = {
 };
 
 // Broadcast server stats to the management room every 5 seconds
-//setInterval(() => {
-//io.to("mgmt").emit("mgmt.stats", JSON.stringify(stats));
-//}, 5e3);
+// setInterval(() => {
+// io.to("mgmt").emit("mgmt.stats", JSON.stringify(stats));
+// }, 5e3);
 
 // Handle socket.io connections
 io.on("connection", async (socket) => {
