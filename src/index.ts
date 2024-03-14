@@ -166,7 +166,10 @@ io.on("connection", async (socket) => {
   });
 
   // Handle socket.io room join events
-  socket.on("join", async ({ id }, ack) => {
+  socket.on("join", async (data, ack) => {
+    let id = data.id;
+    if (typeof data === "string") id = JSON.parse(data).id;
+
     stats.thud.messages.inc(1);
     stats.thud.messagesInbound.inc(1);
     void socket.join(id);
