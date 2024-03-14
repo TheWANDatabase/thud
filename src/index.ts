@@ -66,10 +66,9 @@ let lastState: any = {
     width: 0,
     height: 0,
     path: "Unknown",
-    childImages: []
+    childImages: [],
   },
   imminence: 0,
-  textImminence: "distant",
   sponsors: [],
   streamUrl: "Unknown",
 };
@@ -201,12 +200,12 @@ io.on("connection", async (socket) => {
   });
 
   // Handle socket.io messages
-  socket.on("message", (data: CoreMessage<unknown> | string, ack) => {
+  socket.on("message", (data: CoreMessage<any> | string, ack) => {
     stats.thud.messages.inc(1);
     stats.thud.messagesInbound.inc(1);
     let body;
     if (typeof data === "string") {
-      body = JSON.parse(data) as CoreMessage<unknown>;
+      body = JSON.parse(data) as CoreMessage<any>;
     } else {
       body = data;
     }
@@ -251,7 +250,12 @@ io.on("connection", async (socket) => {
 
         case "live":
           // lastState = Object.assign(lastState, request.payload.data as any);
-          request.payload.data = lastState;
+          // request.payload.data = lastState;
+
+          if ((request.payload.data as any).live !== lastState.live) {
+            (request.payload.data as any).live = lastState.live;
+            (request.payload.data as any).imminence = lastState.imminence;
+          }
           stats.live.messages.inc(1 + rooms.live.length);
           stats.live.messagesInbound.inc(1);
           stats.live.messagesOutbound.inc(rooms.live.length);
