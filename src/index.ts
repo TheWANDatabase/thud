@@ -195,8 +195,11 @@ io.on("connection", async (socket) => {
 
       default:
         if (ack !== undefined) return ack("error");
+        if (ack === undefined)
+          return socket.emit("error", "failed to join room " + id);
     }
     if (ack !== undefined) ack("ok");
+    if (ack === undefined) socket.emit("joined", id);
   });
 
   // Handle socket.io messages
