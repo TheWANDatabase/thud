@@ -249,9 +249,6 @@ io.on("connection", async (socket) => {
           break;
 
         case "live":
-          // lastState = Object.assign(lastState, request.payload.data as any);
-          // request.payload.data = lastState;
-
           if ((request.payload.data as any).live !== lastState.live) {
             (request.payload.data as any).live = lastState.live;
             (request.payload.data as any).imminence = lastState.imminence;
